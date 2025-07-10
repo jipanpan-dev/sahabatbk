@@ -3,6 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../App';
 import { UserRole } from '../types';
 import { GraduationCap, UserIcon } from '../components/Icons';
+import { API_URL } from '../config';
 
 const AuthPage: React.FC = () => {
   const [isLoginView, setIsLoginView] = useState(true);
@@ -37,8 +38,8 @@ const AuthPage: React.FC = () => {
     setIsLoading(true);
 
     const form = e.currentTarget as HTMLFormElement;
-    const email = form.email.value;
-    const password = form.password.value;
+    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
     
     const success = await login(email, password);
     
@@ -50,13 +51,74 @@ const AuthPage: React.FC = () => {
     }
   };
   
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Signup logic would go here. For now, we'll show an alert.
-    alert("Fungsionalitas pendaftaran belum diimplementasikan.");
-    // In a real app:
-    // const success = await signup(formData);
-    // if (success) navigate(from, { replace: true });
+    setError(null);
+    setIsLoading(true);
+
+    const form = e.currentTarget as HTMLFormElement;
+    const passwordInput = form.elements.namedItem('signup-password') as HTMLInputElement;
+    const confirmPasswordInput = form.elements.namedItem('confirm-password') as HTMLInputElement;
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+
+    if (password !== confirmPassword) {
+      setError("Password dan konfirmasi password tidak cocok.");
+      setIsLoading(false);
+      return;
+    }
+
+    const fullNameInput = form.elements.namedItem('fullName') as HTMLInputElement;
+    const emailInput = form.elements.namedItem('signup-email') as HTMLInputElement;
+
+    const baseData = {
+      name: fullNameInput.value,
+      email: emailInput.value,
+      password,
+      role: selectedRole,
+    };
+    
+    let roleSpecificData = {};
+    if (selectedRole === UserRole.STUDENT) {
+        const classInput = form.elements.namedItem('class') as HTMLInputElement;
+        const schoolInput = form.elements.namedItem('school') as HTMLInputElement;
+        roleSpecificData = {
+            class: classInput.value,
+            school: schoolInput.value,
+        };
+    } else { // Counselor
+        const counselorIdInput = form.elements.namedItem('counselorId') as HTMLInputElement;
+        const specializationInput = form.elements.namedItem('specialization') as HTMLInputElement;
+        roleSpecificData = {
+            counselorId: counselorIdInput.value,
+            specialization: specializationInput.value,
+        }
+    }
+    
+    const payload = { ...baseData, ...roleSpecificData };
+
+    try {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert(result.message);
+            setIsLoginView(true); // Switch to login view on success
+        } else {
+            setError(result.message || "Pendaftaran gagal. Silakan coba lagi.");
+        }
+
+    } catch (err) {
+        console.error("Signup error:", err);
+        setError("Terjadi kesalahan jaringan. Periksa koneksi Anda.");
+    } finally {
+        setIsLoading(false);
+    }
   }
 
   const toggleView = () => {
@@ -68,11 +130,15 @@ const AuthPage: React.FC = () => {
     <>
       <div className="mb-4">
         <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="fullName">Nama Lengkap</label>
-        <input className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="fullName" type="text" placeholder="Nama Lengkap" required />
+        <input name="fullName" className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="fullName" type="text" placeholder="Nama Lengkap" required />
       </div>
-      <div className="mb-4">
-        <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="class">Kelas & Sekolah</label>
-        <input className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="class" type="text" placeholder="Contoh: IX A, SMP Harapan Bangsa" required />
+       <div className="mb-4">
+        <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="class">Kelas</label>
+        <input name="class" className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="class" type="text" placeholder="Contoh: IX A" required />
+      </div>
+       <div className="mb-4">
+        <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="school">Nama Sekolah</label>
+        <input name="school" className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="school" type="text" placeholder="Contoh: SMP Harapan Bangsa" required />
       </div>
     </>
   );
@@ -80,16 +146,16 @@ const AuthPage: React.FC = () => {
   const renderCounselorForm = () => (
      <>
       <div className="mb-4">
-        <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="fullName">Nama Lengkap</label>
-        <input className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="fullName" type="text" placeholder="Nama Lengkap & Gelar" required />
+        <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="fullName">Nama Lengkap & Gelar</label>
+        <input name="fullName" className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="fullName" type="text" placeholder="Nama Lengkap & Gelar" required />
       </div>
        <div className="mb-4">
         <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="counselorId">ID/NIP Konselor</label>
-        <input className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="counselorId" type="text" placeholder="Nomor Induk Pegawai" required />
+        <input name="counselorId" className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="counselorId" type="text" placeholder="Nomor Induk Pegawai" required />
       </div>
       <div className="mb-4">
         <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="specialization">Bidang Spesialisasi</label>
-        <input className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="specialization" type="text" placeholder="Contoh: Karir, Kecemasan" required />
+        <input name="specialization" className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="specialization" type="text" placeholder="Contoh: Karir, Kecemasan" required />
       </div>
     </>
   );
@@ -107,11 +173,11 @@ const AuthPage: React.FC = () => {
             <form onSubmit={handleLogin}>
                 <div className="mb-4">
                     <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
-                    <input className="shadow appearance-none border rounded w-full py-3 px-4 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="email" type="email" placeholder="contoh@email.com" required />
+                    <input name="email" className="shadow appearance-none border rounded w-full py-3 px-4 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="email" type="email" placeholder="contoh@email.com" required />
                 </div>
                 <div className="mb-6">
                     <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="password">Password</label>
-                    <input className="shadow appearance-none border rounded w-full py-3 px-4 text-slate-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="password" type="password" placeholder="******************" required />
+                    <input name="password" className="shadow appearance-none border rounded w-full py-3 px-4 text-slate-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="password" type="password" placeholder="******************" required />
                      <a className="inline-block align-baseline font-bold text-sm text-primary-500 hover:text-primary-800" href="#">Lupa Password?</a>
                 </div>
                 {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
@@ -141,19 +207,20 @@ const AuthPage: React.FC = () => {
 
                 <div className="mb-4">
                     <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="signup-email">Email</label>
-                    <input className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="signup-email" type="email" placeholder="Email" required />
+                    <input name="signup-email" className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="signup-email" type="email" placeholder="Email" required />
                 </div>
                 <div className="mb-4">
                     <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="signup-password">Password</label>
-                    <input className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="signup-password" type="password" placeholder="******************" required />
+                    <input name="signup-password" className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="signup-password" type="password" placeholder="******************" required />
                 </div>
                 <div className="mb-6">
                     <label className="block text-slate-700 text-sm font-bold mb-2" htmlFor="confirm-password">Konfirmasi Password</label>
-                    <input className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="confirm-password" type="password" placeholder="******************" required />
+                    <input name="confirm-password" className="shadow appearance-none border rounded w-full py-2 px-3 text-slate-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-400" id="confirm-password" type="password" placeholder="******************" required />
                 </div>
+                {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
                 <div className="flex items-center justify-between">
-                     <button className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-colors" type="submit">
-                        Daftar
+                     <button className="w-full bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-colors disabled:bg-primary-300" type="submit" disabled={isLoading}>
+                        {isLoading ? 'Memproses...' : 'Daftar'}
                     </button>
                 </div>
             </form>

@@ -104,6 +104,57 @@ const createNotification = async (userId, message, link) => {
 
 // --- API ROUTES ---
 
+// [POST] /api/auth/register
+app.post('/api/auth/register', async (req, res) => {
+    const { name, email, password, role, ...otherFields } = req.body;
+    if (!name || !email || !password || !role) {
+        return res.status(400).json({ message: 'Nama, email, password, dan peran wajib diisi.' });
+    }
+
+    if (role === 'student' && (!otherFields.class || !otherFields.school)) {
+        return res.status(400).json({ message: 'Kelas dan sekolah wajib diisi untuk siswa.' });
+    }
+
+    if (role === 'counselor' && (!otherFields.counselorId || !otherFields.specialization)) {
+        return res.status(400).json({ message: 'ID Konselor dan spesialisasi wajib diisi untuk konselor.' });
+    }
+
+    try {
+        const salt = await bcrypt.genSalt(10);
+        const password_hash = await bcrypt.hash(password, salt);
+        const newId = `${role.substring(0,3)}-${Date.now()}`;
+        const profilePicture = `https://i.pravatar.cc/150?u=${newId}`;
+        
+        const query = 'INSERT INTO users (id, name, email, password_hash, role, class, school, counselorId, specialization, profilePicture, counselingStatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        
+        // New counselors are inactive by default for security, requiring admin activation.
+        const counselingStatus = role === 'counselor' ? 'inactive' : null;
+
+        await db.execute(query, [
+            newId, 
+            name, 
+            email, 
+            password_hash, 
+            role, 
+            otherFields.class || null, 
+            otherFields.school || null, 
+            otherFields.counselorId || null,
+            otherFields.specialization || null, 
+            profilePicture, 
+            counselingStatus
+        ]);
+
+        res.status(201).json({ message: 'Pendaftaran berhasil! Anda sekarang dapat masuk.' });
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'Akun dengan email ini sudah ada.' });
+        }
+        console.error('Registration error:', error);
+        res.status(500).json({ message: 'Terjadi kesalahan internal saat pendaftaran.' });
+    }
+});
+
+
 // [POST] /api/auth/login
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
@@ -122,6 +173,10 @@ app.post('/api/auth/login', async (req, res) => {
 
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        if (user.role === 'counselor' && user.counselingStatus === 'inactive') {
+            return res.status(403).json({ message: 'Akun konselor Anda belum aktif. Hubungi administrator.' });
         }
 
         const { password_hash, ...userPayload } = user;
