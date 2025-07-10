@@ -1,37 +1,89 @@
 # SahabatBK: Aplikasi Konseling Siswa (Full-Stack)
 
-SahabatBK adalah aplikasi web full-stack yang dirancang untuk menjadi jembatan digital antara siswa SMP dengan konselor sekolah mereka. Aplikasi ini menyediakan platform yang aman, rahasia, dan mudah diakses untuk mendukung kesehatan mental dan kesejahteraan siswa melalui sesi konseling online.
+SahabatBK adalah aplikasi web yang dirancang untuk menghubungkan siswa SMP dengan konselor sekolah dalam lingkungan yang aman dan ramah pengguna. Proyek ini berisi arsitektur **full-stack** lengkap:
 
-## 🎯 Target Pengguna
+-   **Frontend:** Aplikasi React yang dibangun dengan Vite.
+-   **Backend:** Server Express.js yang menyediakan API.
+-   **Database:** MySQL untuk menyimpan data pengguna dan sesi.
 
-Aplikasi ini melayani tiga peran utama, masing-masing dengan dasbor dan fungsionalitas yang disesuaikan:
-1.  **Siswa**: Mencari dukungan, menjadwalkan sesi, dan berkomunikasi dengan konselor.
-2.  **Konselor (Guru BK)**: Mengelola jadwal, menanggapi permintaan siswa, dan melakukan sesi konseling.
-3.  **Administrator**: Mengawasi operasional platform, mengelola akun pengguna, dan memantau aktivitas sistem.
+## Struktur Proyek
 
-## ✨ Fitur Unggulan
+```
+/
+├── server/               # Backend (Node.js/Express)
+│   ├── server.js
+│   ├── package.json
+│   └── .env.example
+├── src/                  # Frontend (React/Vite)
+│   ├── components/
+│   ├── pages/
+│   ├── App.tsx
+│   └── ...
+├── index.html
+├── vite.config.ts
+├── package.json
+└── Readme.md
+```
+*(File-file mock data seperti `data/mockApi.ts` dan `config.ts` sudah tidak digunakan dan dapat dihapus.)*
 
--   **Otentikasi Aman**: Sistem login berbasis peran menggunakan JWT (JSON Web Tokens).
--   **Penjadwalan Dinamis**: Siswa dapat melihat ketersediaan konselor dan memesan sesi, sementara konselor dapat mengatur jadwal mereka dengan mudah.
--   **Live Chat Rahasia**: Fitur chat real-time untuk komunikasi langsung antara siswa dan konselor dalam sesi yang terjadwal.
--   **Manajemen Sesi Lengkap**: Alur kerja untuk meminta, menyetujui, menolak, menjadwalkan ulang, dan membatalkan sesi konseling.
--   **Notifikasi Real-time**: Pengguna mendapatkan pemberitahuan untuk aktivitas penting seperti pesan baru atau permintaan sesi.
--   **Catatan Pribadi**: Ruang privat dan aman bagi siswa dan konselor untuk membuat catatan pribadi.
--   **Dasbor Administratif**: Alat bagi admin untuk mengelola pengguna dan memantau semua sesi konseling di platform.
+## Instruksi Setup dan Menjalankan Aplikasi
 
-Untuk rincian lengkap mengenai setiap fitur, silakan merujuk ke file `Dokumentasi.md`.
+Anda perlu menjalankan Backend dan Frontend secara bersamaan di dua terminal terpisah.
 
-## 🛠️ Teknologi yang Digunakan
+---
 
--   **Frontend**: React, Vite, TypeScript, Tailwind CSS
--   **Backend**: Node.js, Express.js
--   **Database**: MySQL
--   **Otentikasi**: bcryptjs untuk hashing, JSON Web Token (JWT) untuk sesi
+### Bagian 1: Menjalankan Backend
 
-## 🚀 Memulai Aplikasi
+1.  **Buka Terminal 1** dan masuk ke direktori server.
+    ```bash
+    cd server
+    ```
+2.  Instal dependensi backend.
+    ```bash
+    npm install
+    ```
+3.  Buat file environment. Salin `server/.env.example` menjadi `server/.env` dan isi dengan kredensial database MySQL Anda.
+    ```bash
+    cp .env.example .env
+    # Buka .env dan edit nilainya
+    ```
+4.  Pastikan Anda sudah menjalankan setup database sesuai `DatabaseSetup.md`.
 
-Untuk instruksi lengkap mengenai cara melakukan setup, instalasi, dan menjalankan aplikasi ini di lingkungan lokal Anda, silakan baca panduan di:
+5.  Jalankan server backend.
+    ```bash
+    npm start
+    ```
+    Server akan berjalan di `http://localhost:3001`. Biarkan terminal ini tetap berjalan.
 
-➡️ **[TeachMe.md](./TeachMe.md)**
+---
 
-File `TeachMe.md` berisi semua langkah teknis yang Anda perlukan, mulai dari setup database hingga menjalankan server frontend dan backend.
+### Bagian 2: Menjalankan Frontend
+
+1.  **Buka Terminal 2** dan pastikan Anda berada di direktori **root** proyek.
+2.  Instal dependensi frontend.
+    ```bash
+    npm install
+    ```
+3.  Buat file environment untuk frontend di direktori **root**.
+    ```bash
+    # Buat file baru bernama .env
+    ```
+    Isi file `.env` tersebut dengan baris berikut:
+    ```ini
+    VITE_API_URL=http://localhost:3001
+    ```
+4.  Jalankan server development frontend.
+    ```bash
+    npm run dev
+    ```
+    Aplikasi akan tersedia di `http://localhost:5173` (atau port lain yang ditampilkan di terminal). Buka URL ini di browser Anda.
+
+---
+
+### Akun untuk Testing
+
+Anda dapat menggunakan akun berikut untuk login. Password untuk semua akun adalah `password123`.
+
+-   **Siswa:** `budi@siswa.id`
+-   **Konselor:** `anisa@konselor.id`
+-   **Admin:** `admin@sahabatbk.id`
