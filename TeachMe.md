@@ -79,7 +79,6 @@ Sekarang kita akan beralih ke lingkungan `npm` profesional menggunakan **Vite**.
 
 Untuk menghindari konflik, **hapus file-file berikut** dari proyek Anda:
 - `data/mockApi.ts`
-- `config.ts`
 
 ### 2.2. Instalasi Dependensi Frontend
 
