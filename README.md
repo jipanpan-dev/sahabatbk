@@ -35,3 +35,5 @@ Untuk instruksi lengkap mengenai cara melakukan setup, instalasi, dan menjalanka
 ➡️ **[TeachMe.md](./TeachMe.md)**
 
 File `TeachMe.md` berisi semua langkah teknis yang Anda perlukan, mulai dari setup database hingga menjalankan server frontend dan backend.
+
+Aplikasi ini dibuat menggunakan AI Studio Google, kode di dalam aplikasi mungkin ada yang error/tidak rapih.
