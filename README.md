@@ -33,6 +33,7 @@ Untuk rincian lengkap mengenai setiap fitur, silakan merujuk ke file `Dokumentas
 Untuk instruksi lengkap mengenai cara melakukan setup, instalasi, dan menjalankan aplikasi ini di lingkungan lokal Anda, silakan baca panduan di:
 
 ➡️ **[TeachMe.md](./TeachMe.md)**
+
 📺 **Full Tutorial Playlist di [YouTube](https://www.youtube.com/playlist?list=PLZyxWhIEwtSCrWID0sHNpj0IrUh7efJQN)**
 
 File `TeachMe.md` berisi semua langkah teknis yang Anda perlukan, mulai dari setup database hingga menjalankan server frontend dan backend.
